@@ -2,7 +2,7 @@ from flask import Flask, request, render_template, redirect
 from flask_cors import CORS
 import database as db
 import werkzeug
-
+from sqlalchemy.orm import scoped_session, sessionmaker
 
 app = Flask(__name__)
 CORS(app)
@@ -11,7 +11,8 @@ CORS(app)
 @app.route('/view', methods=['GET'])
 @app.route('/view/<path:category>', methods=['GET'])
 def list_view(category=None):
-    pages_query = db.session.query(db.Page)
+    db_session = scoped_session(sessionmaker(bind=db.engine))
+    pages_query = db_session.query(db.Page)
     if category:
         pages_query = pages_query.filter_by(category=category)
     pages = pages_query.order_by(db.Page.category).all()
@@ -23,14 +24,15 @@ def list_view(category=None):
 def add_page(name=None, url=None):
     if request.method == 'POST':
         data = request.get_json()
-        db.session.add(
+        db_session = scoped_session(sessionmaker(bind=db.engine))
+        db_session.add(
             db.Page(
                 name=data['name'],
                 category=data['category'],
                 url=data['url']
             )
         )
-        db.session.commit()
+        db_session.commit()
         return {
             "method": request.method,
             "success": True
@@ -42,7 +44,8 @@ def add_page(name=None, url=None):
 
 @app.route('/redirect/<id>', methods=['GET'])
 def redirect_to_page(id):
-    page_obj = db.session.query(db.Page).filter_by(id=id).first()
+    db_session = scoped_session(sessionmaker(bind=db.engine))
+    page_obj = db_session.query(db.Page).filter_by(id=id).first()
     if not page_obj:
         return 'No page found'
     return redirect(page_obj.url)
@@ -50,7 +53,8 @@ def redirect_to_page(id):
 
 @app.route('/pages', methods=['GET'])
 def pages_complete():
-    pages = db.session.query(db.Page).all()
+    db_session = scoped_session(sessionmaker(bind=db.engine))
+    pages = db_session.query(db.Page).all()
     return {
         "success": True,
         "pages": [
@@ -67,7 +71,8 @@ def pages_complete():
 @app.route('/page/<id>', methods=['GET', 'PATCH', 'DELETE'])
 def page(id=None):
     method = request.method
-    page_query = db.session.query(db.Page).filter_by(id=id)
+    db_session = scoped_session(sessionmaker(bind=db.engine))
+    page_query = db_session.query(db.Page).filter_by(id=id)
     page_obj = page_query.first()
 
     if not page_obj:
@@ -95,7 +100,7 @@ def page(id=None):
             val = data.get(attr)
             if val:
                 setattr(page_obj, attr, val)
-        db.session.commit()
+        db_session.commit()
         return {
             "method": method,
             "success": True
@@ -103,7 +108,7 @@ def page(id=None):
 
     elif method == "DELETE":
         page_query.delete()
-        db.session.commit()
+        db_session.commit()
         return {
             "method": method,
             "success": True
@@ -120,4 +125,4 @@ def handle_not_found(err):
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host='0.0.0.0')
