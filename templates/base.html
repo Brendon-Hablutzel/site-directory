@@ -1,0 +1,23 @@
+<!doctype html>
+<head>
+    <title>Site Directory</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="static/script.js"></script>
+</head>
+<body>
+    <div id="header">
+        <h1>
+            <a href="{{ url_for('list_view') }}">Site Directory</a>
+        </h1>
+    </div>
+    <hr/>
+    <div id="page-actions-header">
+        <input id="page-id-input" type="number" placeholder="ID">
+        <button class="page-action-button" id="get-page-button">Get page</button>
+        <button class="page-action-button" id="delete-page-button">Delete page</button>
+        <button class="page-action-button" id="update-page-button">Update page</button>
+    </div>
+    <div id="output"></div>
+    <hr/>
+    {% block content %}{% endblock %}
+</body>

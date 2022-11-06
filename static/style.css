@@ -1,0 +1,43 @@
+body {
+    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+#list {
+    font-size: 18px;
+}
+
+#list > li {
+    padding: 2px;
+}
+
+a:visited {
+    color: blue;
+}
+
+#site-table {
+    font-size: 20px;
+    /* width: 100%; */
+}
+
+#site-table td {
+    padding-right: 10px;
+    padding-left: 10px;
+}
+
+#page-id-input, .page-action-button {
+    font-size: 20px;
+}
+
+.page-action-button:hover {
+    cursor: pointer;
+}
+
+#header {
+    display: flex;
+    justify-content: center;
+}
+
+#page-actions-header {
+    display: flex;
+    justify-content: center;
+}
