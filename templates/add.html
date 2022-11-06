@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    <script>
+        function addPage() {
+            const name = document.getElementById("name-input").value;
+            const category = document.getElementById("category-input").value;
+            const url = document.getElementById("url-input").value;
+            if (name !== "" && url !== "") {
+                fetch('/add', {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        "name": name,
+                        "category": category,
+                        "url": url
+                    })
+                })
+                    .then((response) => response.json())
+                    .then(data => {
+                        if (data.success === true) {
+                            alert("Success! You may close this window")
+                        } else {
+                            alert(JSON.stringify(data))
+                        }
+                    });
+            } else {
+                alert("Must enter name and url");
+            }
+        }
+        window.onload = (event) => {
+            document.getElementById("add-page-button").addEventListener("click", addPage);
+        }
+    </script>
+{% endblock %}
+
+{% block content %}
+    <div id="add-page-inputs">
+        <input id="name-input" type="text" placeholder="Name" class="text-input" value="{{ name if name else '' }}">
+        <input id="category-input" type="text" placeholder="Category" class="text-input">
+        <input id="url-input" type="text" placeholder="Url" class="text-input" value="{{ url if url else '' }}">
+        <button id="add-page-button" class="page-action-button">Add</button>
+    </div>
+{% endblock %}

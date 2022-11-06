@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <script>
+        function getPage() {
+            const id = document.getElementById("page-id-input").value;
+            if (id != "") {
+                window.open('/page/' + id, '_blank');
+            } else {
+                alert("Must enter an id");
+            }
+        }
+        
+        function deletePage() {
+            const id = document.getElementById("page-id-input").value;
+            if (id != "") {
+                fetch('/page/' + id, {
+                    method: 'DELETE',
+                    mode: 'cors',
+                })
+                    .then((response) => response.json())
+                    .then(data => {
+                        if (data.success === true) {
+                            location.reload();
+                        } else {
+                            alert(JSON.stringify(data))
+                        }
+                    });
+            } else {
+                alert("Must enter an id");
+            }
+        }
+        
+        async function fetchPageData(id) {
+            const response = await fetch('/page/' + id);
+            const data = await response.json();
+            return data
+        }
+        
+        async function updatePage() {
+            const id = document.getElementById("page-id-input").value;
+            if (id != "") {
+                data = await fetchPageData(id);
+                if (data.success == true) {
+                    fetch('/page/' + id, {
+                        method: 'PATCH',
+                        mode: 'cors',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            "name": prompt("Name: ", data.page.name),
+                            "category": prompt("Category: ", data.page.category),
+                            "url": prompt("URL: ", data.page.url)
+                        })
+                    })
+                        .then((response) => response.json())
+                        .then(data => {
+                            if (data.success === true) {
+                                location.reload();
+                            } else {
+                                alert(JSON.stringify(data))
+                            }
+                        });
+                } else {
+                    alert(JSON.stringify(data));
+                }
+            } else {
+                alert("Must enter an id");
+            }
+        }
+        
+        window.onload = (event) => {
+            document.getElementById("get-page-button").addEventListener("click", getPage);
+            document.getElementById("delete-page-button").addEventListener("click", deletePage);
+            document.getElementById("update-page-button").addEventListener("click", updatePage);
+            document.getElementById("add-page-button").addEventListener("click", e => {
+                window.open("/add", "_blank")
+            });
+        }
+    </script>
+{% endblock %}
+
+{% block content %}
+    <hr/>
+    <div id="page-actions-header">
+        <input id="page-id-input" type="number" placeholder="ID">
+        <button class="page-action-button" id="get-page-button">Get page</button>
+        <button class="page-action-button" id="delete-page-button">Delete page</button>
+        <button class="page-action-button" id="update-page-button">Update page</button>
+        <button class="page-action-button" id="add-page-button">Add page</button>
+    </div>
+    <div id="output"></div>
+    <hr/>
+
+    {% if category %}
+        <h4>Category: {{ category }}</h4>
+    {% endif %}
+    <table id="site-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Category</th>
+                <th>Site</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for page in pages %}
+                <tr>
+                    <td>{{ page.id }}</td>
+                    <td>
+                        <a href="{{ url_for('list_view', category=page.category) }}">
+                            {{ page.category }}
+                        </a>
+                    </td>
+                    <td><a href="{{ page.url }}" target="_blank">{{ page.name }}</a></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

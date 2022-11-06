@@ -41,3 +41,12 @@ a:visited {
     display: flex;
     justify-content: center;
 }
+
+.text-input {
+    font-size: 20px;
+}
+
+#add-page-inputs {
+    display: flex;
+    justify-content: center;
+}
