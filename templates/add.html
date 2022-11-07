@@ -22,7 +22,8 @@
                     .then((response) => response.json())
                     .then(data => {
                         if (data.success === true) {
-                            window.location.href = '/view';
+                            window.close();
+                            /* window.location.href = '/view';*/
                         } else {
                             alert(JSON.stringify(data));
                         }
