@@ -10,8 +10,15 @@ body {
     padding: 2px;
 }
 
+/*
 a:visited {
     color: blue;
+}
+*/
+
+a {
+    text-decoration: none;
+    color: black;
 }
 
 #site-table {
