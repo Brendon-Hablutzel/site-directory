@@ -14,7 +14,7 @@ def list_view(category=None):
     db_session = scoped_session(sessionmaker(bind=db.engine))
     pages_query = db_session.query(db.Page)
     if category:
-        pages_query = pages_query.filter_by(category=category)
+        pages_query = pages_query.filter(db.Page.category.ilike(category.lower() + "%"))
     pages = pages_query.order_by(db.Page.category).all()
     return render_template('view.html', pages=pages, category=category)
 
