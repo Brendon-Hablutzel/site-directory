@@ -24,6 +24,9 @@ class Page(db.Model):
     def __repr__(self):
         return f"<Page(name={self.name}, url={self.url}, category={self.category})>"
 
+with app.app_context():
+    db.create_all()
+
 @app.route('/view', methods=['GET'])
 @app.route('/view/<path:category>', methods=['GET'])
 def list_view(category=None):
@@ -110,7 +113,8 @@ def page(id=None):
                 "id": page_obj.id,
                 "name": page_obj.name,
                 "url": page_obj.url,
-                "category": page_obj.category
+                "category": page_obj.category,
+                "alias": page_obj.alias
             }
         }
 
