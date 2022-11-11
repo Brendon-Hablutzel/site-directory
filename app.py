@@ -1,21 +1,36 @@
 from flask import Flask, request, render_template, redirect
 from flask_cors import CORS
-import database as db
 import werkzeug
-from sqlalchemy.orm import scoped_session, sessionmaker
+from flask_sqlalchemy import SQLAlchemy
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DB_URL")
+db = SQLAlchemy(app)
 CORS(app)
 
+class Page(db.Model):
+    __tablename__ = "pages"
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(255), unique=True)
+    url = db.Column(db.String(255), unique=True)
+    alias = db.Column(db.String(255), unique=True)
+    category = db.Column(db.String(255)) # no leading or trailing slash
+
+    def __repr__(self):
+        return f"<Page(name={self.name}, url={self.url}, category={self.category})>"
 
 @app.route('/view', methods=['GET'])
 @app.route('/view/<path:category>', methods=['GET'])
 def list_view(category=None):
-    db_session = scoped_session(sessionmaker(bind=db.engine))
-    pages_query = db_session.query(db.Page)
+    pages_query = db.session.query(Page)
     if category:
-        pages_query = pages_query.filter(db.Page.category.ilike(category.lower() + "%"))
-    pages = pages_query.order_by(db.Page.category).all()
+        pages_query = pages_query.filter(Page.category.ilike(category.lower() + "%"))
+    pages = pages_query.order_by(Page.category).all()
     return render_template('view.html', pages=pages, category=category)
 
 
@@ -24,17 +39,16 @@ def list_view(category=None):
 def add_page(name=None, url=None):
     if request.method == 'POST':
         data = request.get_json()
-        db_session = scoped_session(sessionmaker(bind=db.engine))
         try:
-            db_session.add(
-                db.Page(
+            db.session.add(
+                Page(
                     name=data['name'],
                     category=data['category'],
                     alias=data['alias'],
                     url=data['url']
                 )
             )
-            db_session.commit()
+            db.session.commit()
         except:
             return {
                 "method": request.method,
@@ -53,8 +67,7 @@ def add_page(name=None, url=None):
 
 @app.route('/redirect/<alias>', methods=['GET'])
 def redirect_to_page(alias):
-    db_session = scoped_session(sessionmaker(bind=db.engine))
-    page_obj = db_session.query(db.Page).filter_by(alias=alias).first()
+    page_obj = db.session.query(Page).filter_by(alias=alias).first()
     if not page_obj:
         return 'No page found'
     return redirect(page_obj.url)
@@ -62,8 +75,7 @@ def redirect_to_page(alias):
 
 @app.route('/pages', methods=['GET'])
 def pages_complete():
-    db_session = scoped_session(sessionmaker(bind=db.engine))
-    pages = db_session.query(db.Page).all()
+    pages = db.session.query(Page).all()
     return {
         "success": True,
         "pages": [
@@ -80,8 +92,7 @@ def pages_complete():
 @app.route('/page/<id>', methods=['GET', 'PATCH', 'DELETE'])
 def page(id=None):
     method = request.method
-    db_session = scoped_session(sessionmaker(bind=db.engine))
-    page_query = db_session.query(db.Page).filter_by(id=id)
+    page_query = db.session.query(Page).filter_by(id=id)
     page_obj = page_query.first()
 
     if not page_obj:
@@ -109,7 +120,7 @@ def page(id=None):
             val = data.get(attr)
             if val:
                 setattr(page_obj, attr, val)
-        db_session.commit()
+        db.session.commit()
         return {
             "method": method,
             "success": True
@@ -117,7 +128,7 @@ def page(id=None):
 
     elif method == "DELETE":
         page_query.delete()
-        db_session.commit()
+        db.session.commit()
         return {
             "method": method,
             "success": True
