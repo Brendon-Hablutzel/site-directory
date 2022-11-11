@@ -51,6 +51,7 @@
                         body: JSON.stringify({
                             "name": prompt("Name: ", data.page.name),
                             "category": prompt("Category: ", data.page.category),
+                            "alias": prompt("Alias: ", data.page.alias),
                             "url": prompt("URL: ", data.page.url)
                         })
                     })
@@ -100,6 +101,7 @@
         <thead>
             <tr>
                 <th>ID</th>
+                <th>Alias</th>
                 <th>Category</th>
                 <th>Site</th>
             </tr>
@@ -108,6 +110,7 @@
             {% for page in pages %}
                 <tr>
                     <td>{{ page.id }}</td>
+                    <td>{{ page.alias }}</td>
                     <td>
                         <a href="{{ url_for('list_view', category=page.category) }}">
                             {{ page.category }}

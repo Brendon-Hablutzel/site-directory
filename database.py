@@ -19,8 +19,9 @@ class Page(Base):
     __tablename__ = "pages"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(255))
-    url = Column(String(255))
+    name = Column(String(255), unique=True)
+    url = Column(String(255), unique=True)
+    alias = Column(String(255), unique=True)
     category = Column(String(255)) # no leading or trailing slash
 
 

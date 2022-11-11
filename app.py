@@ -25,27 +25,36 @@ def add_page(name=None, url=None):
     if request.method == 'POST':
         data = request.get_json()
         db_session = scoped_session(sessionmaker(bind=db.engine))
-        db_session.add(
-            db.Page(
-                name=data['name'],
-                category=data['category'],
-                url=data['url']
+        try:
+            db_session.add(
+                db.Page(
+                    name=data['name'],
+                    category=data['category'],
+                    alias=data['alias'],
+                    url=data['url']
+                )
             )
-        )
-        db_session.commit()
-        return {
-            "method": request.method,
-            "success": True
-        }
+            db_session.commit()
+        except:
+            return {
+                "method": request.method,
+                "success": False,
+                "message": "Duplicate entry"
+            }
+        else:
+            return {
+                "method": request.method,
+                "success": True
+            }
 
     elif request.method == 'GET':
         return render_template('add.html', name=name, url=url)
 
 
-@app.route('/redirect/<id>', methods=['GET'])
-def redirect_to_page(id):
+@app.route('/redirect/<alias>', methods=['GET'])
+def redirect_to_page(alias):
     db_session = scoped_session(sessionmaker(bind=db.engine))
-    page_obj = db_session.query(db.Page).filter_by(id=id).first()
+    page_obj = db_session.query(db.Page).filter_by(alias=alias).first()
     if not page_obj:
         return 'No page found'
     return redirect(page_obj.url)
@@ -96,7 +105,7 @@ def page(id=None):
 
     elif method == "PATCH":
         data = request.get_json()
-        for attr in ["category", "name", "url"]:
+        for attr in ["category", "name", "url", "alias"]:
             val = data.get(attr)
             if val:
                 setattr(page_obj, attr, val)
